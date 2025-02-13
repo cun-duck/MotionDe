@@ -141,18 +141,25 @@ Jika video live tidak tersedia, digunakan video statis atau dataset open source.
 Proyek ini mengimplementasikan sistem deteksi, tracking, dan counting untuk memonitor area high risk menggunakan video feed. Fitur utama telah diselesaikan, termasuk desain database, object detection & tracking, integrasi API & dashboard, serta opsi file upload.  
 ---
 ## Checklist Fitur
+
 ✔️ **Desain Database**:  
   *Diagram dan struktur tabel sudah dibuat di `src/config/models.py`.*
+
 ✔️ **Pengumpulan Dataset**:  
   *Dataset video dari contoh CCTV Jogja / open source.*
+
 ✔️ **Object Detection & Tracking**:   
   *Tidak ada kendala dalam mendeteksi objek yang sangat berdekatan.*
+
 ✔️ **Counting & Polygon Area**:  
   *People in/out dihitung, dan polygon dapat diubah melalui API/dashboard.*
+
 ✔️ **Prediksi (Forecasting)**:  
   *Grafik tren prediksi telah ditampilkan di dashboard menggunakan Chart.js.*
+
 ✔️ **Integrasi API (API/Front End)**:   
   *Endpoint API dan dashboard web interaktif telah diimplementasikan (`src/api/app.py`, `src/api/templates/dashboard.html`).*
+
 ❌ **Deployment**:   
   *Containerization dengan Docker belum diimplementasikan.*
 
