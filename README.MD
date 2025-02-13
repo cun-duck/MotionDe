@@ -150,8 +150,6 @@ MotionDe/
 │   │   ├── app.py              # API endpoints, streaming video, dan dashboard
 │   │   └── templates/
 │   │       └── dashboard.html  # Dashboard web interaktif
-├── data/                      # (Opsional) Tempat menyimpan dataset/video
-├── uploads/                   # Tempat file video yang di-upload user (jangan commit)
 ├── Dockerfile                 # (Opsional) Untuk containerization
 ├── docker-compose.yml         # (Opsional) Untuk deployment dengan Docker Compose
 ├── README.md                  # Dokumentasi lengkap (ini file README.md)
@@ -224,13 +222,25 @@ Proyek ini mengimplementasikan sistem deteksi, tracking, dan counting untuk memo
 
 ## Checklist Fitur
 
-- **Desain Database**: Done  
+✔️ **Desain Database**: (Done)  
   *Diagram dan struktur tabel sudah dibuat di `src/config/models.py`.*
 
-- **Pengumpulan Dataset**: Done  
+✔️ **Pengumpulan Dataset**: (Done)  
   *Dataset video dari contoh CCTV Jogja / open source.*
 
-- **Object Detection & Tracking**: Done  
-  *Menggunakan YOLOv8 dan centroid tracking (lihat `src/detection/yolo_detector.py` &
+✔️ **Object Detection & Tracking**: (Done)  
+  *Terdapat kendala dalam mendeteksi objek yang sangat berdekatan.*
+
+✔️ **Counting & Polygon Area**: (Done)  
+  *People in/out dihitung, dan polygon dapat diubah melalui API/dashboard.*
+
+✔️ **Prediksi (Forecasting)**: (Done)  
+  *Grafik tren prediksi telah ditampilkan di dashboard menggunakan Chart.js.*
+
+✔️ **Integrasi API (API/Front End)**: (Done)  
+  *Endpoint API dan dashboard web interaktif telah diimplementasikan (`src/api/app.py`, `src/api/templates/dashboard.html`).*
+
+❌ **Deployment**: (X)  
+  *Containerization dengan Docker belum diimplementasikan.*
 
 
