@@ -138,6 +138,7 @@ Jika video live tidak tersedia, digunakan video statis atau dataset open source.
   Jika diperlukan, sertakan file `Dockerfile` dan `docker-compose.yml` beserta petunjuk penggunaan dalam README.
 ---
 ## Penutup
+
 Proyek ini mengimplementasikan sistem deteksi, tracking, dan counting untuk memonitor area high risk menggunakan video feed. Fitur utama telah diselesaikan, termasuk desain database, object detection & tracking, integrasi API & dashboard, serta opsi file upload.  
 ---
 ## Checklist Fitur
