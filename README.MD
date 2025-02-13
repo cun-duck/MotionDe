@@ -120,7 +120,16 @@ MotionDe/
 ---
 
 ## Diagram Desain
-*(Lampirkan diagram database dan diagram alur sistem di sini atau sebagai file gambar terpisah di repositori.)*
+## Diagram Desain
+
+**Diagram Database:**
+
+![Database Diagram](diagrams/database.png)
+
+**Diagram Alur Sistem:**
+
+![System Flow Diagram](flow.png)
+
 
 ---
 
