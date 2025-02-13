@@ -11,7 +11,7 @@ class YOLODetector:
         
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
-        results = self.model(frame_rgb, conf=0.2, iou=0.4, augment=True)[0]
+        results = self.model(frame_rgb, conf=0.2, iou=0.5, augment=True, agnostic_nms=True)[0]
         detections = []
         if results.boxes is not None and len(results.boxes) > 0:
             boxes = results.boxes.xyxy.cpu().numpy()
