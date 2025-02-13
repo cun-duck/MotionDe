@@ -128,7 +128,7 @@ MotionDe/
 
 **Diagram Alur Sistem:**
 
-![System Flow Diagram](flow.png)
+![System Flow Diagram](diagrams/flow.png)
 
 
 ---
