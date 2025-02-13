@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Object Counting Dashboard</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js untuk grafik -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #f1f1f1;
+    }
+    /* Kontainer video dengan tinggi tetap */
+    .video-container {
+      width: 100%;
+      background-color: #000;
+      position: relative;
+      height: 350px;
+      overflow: hidden;
+    }
+    .video-stream {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .sidebar {
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      padding: 5px;
+    }
+    .feedback-container {
+      height: 150px;  
+      box-sizing: border-box;
+      margin-bottom: 5px;
+      padding: 2px;
+      font-size: 0.9rem;
+      overflow-y: auto;
+    }
+    .graph-container {
+      height: 250px;  
+      box-sizing: border-box;
+      background-color: #fafafa;
+      padding: 5px;
+      border-top: 1px solid #ddd;
+    }
+    .counter {
+      font-size: 1rem;
+      font-weight: normal;
+    }
+    .counter strong {
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    .main-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .video-section {
+      flex: 3;
+      min-width: 300px;
+    }
+    .feedback-section {
+      flex: 1;
+      min-width: 300px;
+    }
+    .controls {
+      background-color: #ffffff;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Object Counting System</a>
+    </div>
+  </nav>
+  
+  <div class="container my-4">
+    <!-- Main Content: Video + Sidebar -->
+    <div class="main-content">
+      <!-- Video Section -->
+      <div class="video-section">
+        <div class="video-container">
+          <!-- Stream processed video dari endpoint /video_feed -->
+          <img src="{{ url_for('video_feed') }}" class="video-stream" alt="Processed Video">
+        </div>
+      </div>
+      <!-- Sidebar Feedback -->
+      <div class="feedback-section">
+        <div class="sidebar">
+          <div class="feedback-container">
+            <h5>Detection Feedback</h5>
+            <p class="counter"><strong>Orang:</strong> <span id="orang">{{ people_counter.last_counts[0] if people_counter and (0 in people_counter.last_counts) else 0 }}</span></p>
+            <p class="counter"><strong>Mobil:</strong> <span id="mobil">{{ people_counter.last_counts[2] if people_counter and (2 in people_counter.last_counts) else 0 }}</span></p>
+            <p class="counter"><strong>Motor:</strong> <span id="motor">{{ people_counter.last_counts[3] if people_counter and (3 in people_counter.last_counts) else 0 }}</span></p>
+            <hr>
+            <h6>People Tracking</h6>
+            <p class="counter"><strong>Orang masuk:</strong> <span id="people-in">{{ people_counter.count_in if people_counter else 0 }}</span></p>
+            <p class="counter"><strong>Orang keluar:</strong> <span id="people-out">{{ people_counter.count_out if people_counter else 0 }}</span></p>
+          </div>
+          <div class="graph-container">
+            <canvas id="trendChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Controls Section -->
+    <div class="controls">
+      {% if message %}
+        <div class="alert alert-success" role="alert">
+          {{ message }}
+        </div>
+      {% endif %}
+      <form method="POST" action="/dashboard" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label"><strong>Pilih Sumber Video:</strong></label>
+          <div>
+            {% for stream in default_streams %}
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="streaming_option" id="option{{ loop.index }}" value="{{ stream }}"
+                {% if selected_option == stream %} checked {% endif %}>
+                <label class="form-check-label" for="option{{ loop.index }}">
+                  {% if stream == "webcam" %}
+                    Webcam (Local Camera)
+                  {% else %}
+                    {{ stream }}
+                  {% endif %}
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="customLink" class="form-label"><strong>Masukan Streaming URL:</strong></label>
+          <input type="text" class="form-control" id="customLink" name="custom_link" placeholder="Enter .m3u8 URL here">
+        </div>
+        <div class="mb-3">
+          <label for="videoFile" class="form-label"><strong>Upload a Video File:</strong></label>
+          <input type="file" class="form-control" id="videoFile" name="video_file" accept="video/*">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Sumber Video</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Script untuk polling feedback counters -->
+  <script>
+    function updateFeedback() {
+      // Update people tracking feedback
+      fetch('/api/stats/live')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('people-in').innerText = data.count_in || 0;
+          document.getElementById('people-out').innerText = data.count_out || 0;
+        })
+        .catch(error => console.error('Error fetching people stats:', error));
+      
+      // Update object counts
+      fetch('/api/detections')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('orang').innerText = data["0"] || 0;
+          document.getElementById('mobil').innerText = data["2"] || 0;
+          document.getElementById('motor').innerText = data["3"] || 0;
+        })
+        .catch(error => console.error('Error fetching detection counts:', error));
+    }
+    
+    setInterval(updateFeedback, 2000);
+    updateFeedback();
+  </script>
+  
+  <!-- Script untuk menampilkan grafik trend menggunakan Chart.js -->
+  <script>
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  let trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [], // label waktu
+      datasets: [
+        {
+          label: 'People In',
+          data: [],
+          borderColor: 'rgb(75, 192, 192)',
+          fill: false,
+          tension: 0.1
+        },
+        {
+          label: 'People Out',
+          data: [],
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false,
+          tension: 0.1
+        },
+        {
+          label: 'Orang (Deteksi)',
+          data: [],
+          borderColor: 'rgb(0, 128, 0)',
+          fill: false,
+          tension: 0.1
+        },
+        {
+          label: 'Mobil (Deteksi)',
+          data: [],
+          borderColor: 'rgb(0, 0, 255)',
+          fill: false,
+          tension: 0.1
+        },
+        {
+          label: 'Motor (Deteksi)',
+          data: [],
+          borderColor: 'rgb(255, 165, 0)',
+          fill: false,
+          tension: 0.1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Count'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  function updateTrendChart() {
+    let timestamp = new Date().toLocaleTimeString();
+    Promise.all([
+      fetch('/api/stats/live').then(response => response.json()),
+      fetch('/api/detections').then(response => response.json())
+    ])
+    .then(([liveData, detectionData]) => {
+      trendChart.data.labels.push(timestamp);
+      trendChart.data.datasets[0].data.push(liveData.count_in || 0);
+      trendChart.data.datasets[1].data.push(liveData.count_out || 0);
+      trendChart.data.datasets[2].data.push(detectionData["0"] || 0);
+      trendChart.data.datasets[3].data.push(detectionData["2"] || 0);
+      trendChart.data.datasets[4].data.push(detectionData["3"] || 0);
+
+      const maxPoints = 20;
+      if (trendChart.data.labels.length > maxPoints) {
+        trendChart.data.labels.shift();
+        trendChart.data.datasets.forEach(dataset => {
+          dataset.data.shift();
+        });
+      }
+      trendChart.update();
+    })
+    .catch(error => console.error('Error fetching trend data:', error));
+  }
+
+  setInterval(updateTrendChart, 5000);
+  updateTrendChart();
+</script>
+</body>
+</html>
