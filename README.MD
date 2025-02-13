@@ -7,7 +7,7 @@ Proyek ini merupakan implementasi sistem object detection, tracking, dan people 
 
 ## List & Checklist Fitur
 
-###Desain Database (SQL/NoSQL)
+### Desain Database (SQL/NoSQL)
 - **Fitur:**
   - Menyimpan data objek/orang yang terdeteksi (waktu deteksi, detail deteksi, dll).
   - Menyimpan data counting (jumlah orang yang masuk dan keluar area polygon).
